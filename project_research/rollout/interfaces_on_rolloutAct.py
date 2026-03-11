@@ -23,6 +23,7 @@ import argparse
 #     #"--skip", "6"
 # ]
 from rollout_Act import InteractiveRollout
+from distutils.util import strtobool
 def parse_args():
     parser = argparse.ArgumentParser(
         description="ACT rollout over iceoryx (HSR)"
@@ -38,6 +39,19 @@ def parse_args():
         default=None,
         help="(optional) frame skip for ACT (forwarded to RolloutAct --skip)",
     )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="cuda",
+        choices=["cuda", "cpu"],
+        help="(optional) device",
+    )
+    parser.add_argument(
+        "--use-autocast",
+        type=lambda x: bool(strtobool(x)),
+        default=False,
+        help="(optional) use autocast",
+    ) 
     return parser.parse_args()
 
 
@@ -57,7 +71,7 @@ def main():
     # RolloutAct が使う sys.argv を上書き
     sys.argv = rollout_argv
     # ========== 1) ACT policy のロード ==========
-    rollout = InteractiveRollout()
+    rollout = InteractiveRollout(device=args.device)
 
     ### debug info TODO: => InteractiveRollout
     state_meta  = rollout.model_meta_info["state"]
@@ -145,7 +159,9 @@ def main():
             images = [ np_hand ]
 
             # ===== ACT policy から action を計算（推論）=====
-            action = rollout.step(state, images, do_plot=False)
+            casttype = torch.float16 if args.device == "cuda" else torch.bfloat16
+            with torch.inference_mode(), torch.autocast("cuda", enabled=args.use_autocast, dtype=casttype):
+                action = rollout.step(state, images, do_plot=False)
 
             arm_cmd = action[:JOINT_CMD_DIM]
             gripper_cmd = action[JOINT_CMD_DIM:]
