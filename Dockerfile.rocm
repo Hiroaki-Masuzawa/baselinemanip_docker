@@ -121,5 +121,35 @@ index 6f15a45..fc5c9fc 100644
  
          # Save last checkpoint
          self.save_current_ckpt("last")
+diff --git a/robo_manip_baselines/policy/act/RolloutAct.py b/robo_manip_baselines/policy/act/RolloutAct.py
+index 894c739..092720c 100644
+--- a/robo_manip_baselines/policy/act/RolloutAct.py
++++ b/robo_manip_baselines/policy/act/RolloutAct.py
+@@ -20,7 +20,7 @@ class RolloutAct(RolloutBase):
+             help="whether to disable temporal ensembling of the inferred policy",
+         )
+ 
+-    def setup_policy(self):
++    def setup_policy(self, device="cuda"):
+         # Print policy information
+         self.print_policy_info()
+         print(
+@@ -31,6 +31,7 @@ class RolloutAct(RolloutBase):
+         DETRVAE.set_state_dim(self.state_dim)
+         DETRVAE.set_action_dim(self.action_dim)
+         self.policy = ACTPolicy(self.model_meta_info["policy"]["args"])
++        self.policy.to(device)
+ 
+         # Register fook to visualize attention images
+         def forward_fook(_layer, _input, _output):
+@@ -43,7 +44,7 @@ class RolloutAct(RolloutBase):
+             layer.self_attn.register_forward_hook(forward_fook)
+ 
+         # Load checkpoint
+-        self.load_ckpt()
++        self.load_ckpt(device)
+ 
+     def setup_plot(self):
+         fig_ax = plt.subplots(
 _DOC_
 EOF
