@@ -138,3 +138,24 @@ RUN source /irsl_venv/bin/activate && \
 #          self.save_current_ckpt("last")
 # _DOC_
 # EOF
+
+# task_descがないパターンがあったのでコードを修正して対応
+RUN <<EOF
+cd /RoboManipBaselines
+cat - << _DOC_ | patch -p1
+diff --git a/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py b/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
+index 8ae04f5..f56311e 100644
+--- a/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
++++ b/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
+@@ -189,6 +189,9 @@ class ConvertRmbDataToLerobot:
+                 elif "task_desc" in rmb_data.attrs:
+                     task_desc = rmb_data.attrs["task_desc"]
+                 else:
++                    task_desc = None
++
++                if not task_desc:
+                     env_name = rmb_data.attrs["env"]
+                     if env_name == "MujocoUR5eCableEnv":
+                         task_desc = "pass the cable between two poles"
+_DOC_
+EOF
