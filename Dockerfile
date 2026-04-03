@@ -140,11 +140,12 @@ RUN source /irsl_venv/bin/activate && \
 # EOF
 
 # task_descがないパターンがあったのでコードを修正して対応
+# convertが遅かったので対応
 RUN <<EOF
 cd /RoboManipBaselines
 cat - << _DOC_ | patch -p1
 diff --git a/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py b/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
-index 8ae04f5..f56311e 100644
+index 8ae04f5..f60cc0f 100644
 --- a/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
 +++ b/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
 @@ -189,6 +189,9 @@ class ConvertRmbDataToLerobot:
@@ -157,5 +158,41 @@ index 8ae04f5..f56311e 100644
                      env_name = rmb_data.attrs["env"]
                      if env_name == "MujocoUR5eCableEnv":
                          task_desc = "pass the cable between two poles"
+@@ -393,18 +396,24 @@ class ConvertRmbDataToLerobot:
+ 
+         data_num = len(self.dataset)
+         q01, q99 = {}, {}
+-        data_dir = {}
++        data_dir = {
++            key: []
++            for key, pattern in stats_patterns.items()
++            if key not in self.dataset.meta.camera_keys
++        }
+ 
+-        for key, pattern in stats_patterns.items():
+-            if key in self.dataset.meta.camera_keys:
+-                continue
+-            data_dir[key] = []
+-            for i in range(data_num):
+-                data_dir[key].append(self.dataset[i][key].float())
+-            data_dir[key] = torch.stack(data_dir[key], dim=0)
++        for i in range(data_num):
++            sample = self.dataset[i]
++            for key in data_dir:
++                data_dir[key].append(sample[key].float())
++        
++        for key in data_dir:
++            data = torch.stack(data_dir[key], dim=0)
++            data_dir[key] = data
++
++            q01[key] = torch.quantile(data, 0.01, dim=0)
++            q99[key] = torch.quantile(data, 0.99, dim=0)
+ 
+-            q01[key] = torch.quantile(data_dir[key], 0.01, 0)
+-            q99[key] = torch.quantile(data_dir[key], 0.99, 0)
+ 
+         for key in stats_patterns:
+             if key in self.dataset.meta.camera_keys:
+
 _DOC_
 EOF

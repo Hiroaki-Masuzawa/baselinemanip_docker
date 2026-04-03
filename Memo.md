@@ -8,10 +8,15 @@
 - RoboManipBaselinesを本家のを利用するように変更
 - ↑に合わせてパッチは当てないように変更．（単純に対応するのがめんどくさいだけなので後で考える）
 - lerobotのインストールを実施するように変更．
-- dataset convert時にtask descriptionが正しくセットされない場合があったのでpatchで対応．
+- dataset convertのスクリプト`ConvertRmbDataToLerobot.py`をpatchで修正．
+    - task descriptionが正しくセットされない場合があったので対応．
+        - これ作者の意図としては`--task_desc`オプションで書いてほしいというだろうけど，複数のデータを混ぜて学習することを考えるともうちょっと何かできるとうれしい．
+    - データセット内の統計データを取得する処理を変更
+        - 当該部分が遅すぎる．（データのコンバートに2時間なのに統計データ4時間越えとかになる）
+        - 原因はdataset[i]でのアクセスが遅いがこれを必要key分だけアクセスしていることなので，dataset[i]には1回だけアクセスして各key用のデータを取得し保持するように変更．メモリ使用量が気になるところだが，MujocoUR5ePickで実行する分にはそんなに気にはならない．
 
 ## run.shの変更
-- dataloader用のshmが必要だったので8Gに増量
+- dataloader用のshmが必要だったので8Gに増やした
 
 ## try script
 
@@ -36,12 +41,44 @@ python /RoboManipBaselines/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py 
 hf auth login
 
 # 学習
-# readmeのコマンド例と違うのはbatch_size(32->4)で，GPUに乗せるために小さくしている
-lerobot-train --dataset.root=dataset/MujocoUR5eCable_lerobot --output_dir trained --dataset.repo_id=null --policy.type=pi0 --job_name=pi0_training --policy.pretrained_path=lerobot/pi0_base   --policy.repo_id=local_repo   --policy.compile_model=true  --policy.gradient_checkpointing=false --policy.dtype=bfloat16 --policy.freeze_vision_encoder=false --policy.train_expert_only=true --policy.push_to_hub=false --policy.input_features='{"observation.images.front_rgb": {"shape":[3,224,224], "type":"VISUAL"}, "observation.images.hand_rgb": {"shape":[3,224,224], "type":"VISUAL"}, "observation.state": {"shape":[7], "type":"STATE"}}'  --policy.n_action_steps=8 --policy.chunk_size=16 --batch_size=4
+# readmeのコマンド例と違うのは2点
+# - batch_size(32->4)で，GPUに乗せるために小さくしている
+# - freeze_vision_encoder=true としvision encoderはトレーニングしないようにしている（トレーニングの高速化）
+lerobot-train --dataset.root=dataset/lerobot --output_dir trained --dataset.repo_id=null --policy.type=pi0 --job_name=pi0_training --policy.pretrained_path=lerobot/pi0_base   --policy.repo_id=local_repo   --policy.compile_model=true  --policy.gradient_checkpointing=false --policy.dtype=bfloat16 --policy.freeze_vision_encoder=true --policy.train_expert_only=true --policy.push_to_hub=false --policy.input_features='{"observation.images.front_rgb": {"shape":[3,224,224], "type":"VISUAL"}, "observation.images.hand_rgb": {"shape":[3,224,224], "type":"VISUAL"}, "observation.state": {"shape":[7], "type":"STATE"}}'  --policy.n_action_steps=8 --policy.chunk_size=16 --batch_size=4
 ```
+## MujocoUR5ePickのタスクについて
+```
+# python3 -c 'import pandas as pd; df = pd.read_parquet("dataset/lerobot/meta/tasks.parquet"); print(df.to_string())' 
+                                                                                                  task_index
+Pick up the large red box and place it in the black basket.                                                0
+Pick up the large red box and place it in the white basket.                                                1
+Pick up the spam can and place it in the black basket.                                                     2
+Pick up the spam can and place it in the white basket.                                                     3
+Pick up the light green dish and place it in the black basket.                                             4
+Pick up the light green dish and place it in the white basket.                                             5
+Pick up the small brown box and place it in the black basket.                                              6
+Pick up the small brown box and place it in the white basket.                                              7
+Pick up the red cup and place it in the black basket.                                                      8
+Pick up the red cup and place it in the white basket.                                                      9
+Pick up the plastic bottle with a black body and an orange cap and place it in the black basket.          10
+Pick up the plastic bottle with a black body and an orange cap and place it in the white basket.          11
+Pick up the chinese spoon and place it in the black basket.                                               12
+Pick up the chinese spoon and place it in the white basket.                                               13
+Pick up the plastic bottle with a blue body and a white cap and place it in the black basket.             14
+Pick up the plastic bottle with a blue body and a white cap and place it in the white basket.             15
+Pick up the purple tape and place it in the black basket.                                                 16
+Pick up the purple tape and place it in the white basket.                                                 17
+```
+
 
 ## Todo
 - [x] check convert dataset
 - [x] Make Hugging Face account
 - [ ] training model
 - [ ] check Rollout
+
+
+<!--
+python3 -c 'import pandas as pd; df = pd.read_parquet("dataset/lerobot/meta/tasks.parquet"); print(df)'
+python3 -c 'import pandas as pd; df = pd.read_parquet("dataset/lerobot/data/chunk-000/file-000.parquet"); print(df)'
+-->
