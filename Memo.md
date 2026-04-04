@@ -45,6 +45,10 @@ hf auth login
 # - batch_size(32->4)で，GPUに乗せるために小さくしている
 # - freeze_vision_encoder=true としvision encoderはトレーニングしないようにしている（トレーニングの高速化）
 lerobot-train --dataset.root=dataset/lerobot --output_dir trained --dataset.repo_id=null --policy.type=pi0 --job_name=pi0_training --policy.pretrained_path=lerobot/pi0_base   --policy.repo_id=local_repo   --policy.compile_model=true  --policy.gradient_checkpointing=false --policy.dtype=bfloat16 --policy.freeze_vision_encoder=true --policy.train_expert_only=true --policy.push_to_hub=false --policy.input_features='{"observation.images.front_rgb": {"shape":[3,224,224], "type":"VISUAL"}, "observation.images.hand_rgb": {"shape":[3,224,224], "type":"VISUAL"}, "observation.state": {"shape":[7], "type":"STATE"}}'  --policy.n_action_steps=8 --policy.chunk_size=16 --batch_size=4
+
+# 推論
+python3 /RoboManipBaselines/robo_manip_baselines/bin/Rollout.py Pi0 MujocoUR5ePick --checkpoint trained/checkpoints/last/pretrained_model --world_idx 0 --task_desc "Pick up the spam can and place it in the black basket."
+
 ```
 ## MujocoUR5ePickのタスクについて
 ```
@@ -74,8 +78,8 @@ Pick up the purple tape and place it in the white basket.                       
 ## Todo
 - [x] check convert dataset
 - [x] Make Hugging Face account
-- [ ] training model
-- [ ] check Rollout
+- [x] training model
+- [x] check Rollout
 
 
 <!--
