@@ -1,7 +1,8 @@
-FROM repo.irsl.eiiris.tut.ac.jp/irsl_system:one
+FROM repo.irsl.eiiris.tut.ac.jp/irsl_system:24.04_one
 
-ARG TORCH_VER=2.9
-###
+# ARG TORCH_VER=2.9
+### 最新版適用のためにisriからダウンロード
+### commit hash 9222eaf6dfddffdd7ba504c210d199866d1e963c でビルドを確認
 # RUN (cd /; git clone https://github.com/IRSL-tut/RoboManipBaselines.git --recursive)
 RUN (cd /; git clone https://github.com/isri-aist/RoboManipBaselines.git --recursive)
 
@@ -15,25 +16,27 @@ RUN apt update -q -qq && \
 # RUN python3 -m venv /irsl_venv --copies --system-site-packages
 RUN python3 -m venv /irsl_venv --copies
 
-## install pytorch
-RUN <<EOF
-if [ -e /irsl_venv/bin/activate ]; then
-   source /irsl_venv/bin/activate
-fi
-mkdir -p /opt/python
-pip install --target /opt/python iceoryx2==0.7.0
-#
-if [ ${TORCH_VER} == '2.9' ]; then
-    pip install --break-system-packages torch==2.9.0 torchvision torchcodec==0.8
-elif [ ${TORCH_VER} == '2.8' ]; then
-    pip install --break-system-packages torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 torchcodec==0.6 --index-url https://download.pytorch.org/whl/cu128
-elif [ ${TORCH_VER} == '2.7' ]; then
-    pip install --break-system-packages torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 torchcodec==0.5 --index-url https://download.pytorch.org/whl/cu126
-else
-    set -e
-    [ 0 -eq 1 ] ## failed
-fi
-EOF
+## RoboManipBaselines側で適当なバージョンを入れているのでそれを利用するために削除
+## https://github.com/isri-aist/RoboManipBaselines/commit/dfa0f97c6359ca20b70769dbfca924a3f25c61c2
+# ## install pytorch
+# RUN <<EOF
+# if [ -e /irsl_venv/bin/activate ]; then
+#    source /irsl_venv/bin/activate
+# fi
+# mkdir -p /opt/python
+# pip install --target /opt/python iceoryx2==0.7.0
+# #
+# if [ ${TORCH_VER} == '2.9' ]; then
+#     pip install --break-system-packages torch==2.9.0 torchvision torchcodec==0.8
+# elif [ ${TORCH_VER} == '2.8' ]; then
+#     pip install --break-system-packages torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 torchcodec==0.6 --index-url https://download.pytorch.org/whl/cu128
+# elif [ ${TORCH_VER} == '2.7' ]; then
+#     pip install --break-system-packages torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 torchcodec==0.5 --index-url https://download.pytorch.org/whl/cu126
+# else
+#     set -e
+#     [ 0 -eq 1 ] ## failed
+# fi
+# EOF
 
 RUN source /irsl_venv/bin/activate && \
     cd /RoboManipBaselines && \
