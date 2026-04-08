@@ -94,3 +94,11 @@ parquetファイルの見方
 python3 -c 'import pandas as pd; df = pd.read_parquet("dataset/lerobot/meta/tasks.parquet"); print(df)'
 python3 -c 'import pandas as pd; df = pd.read_parquet("dataset/lerobot/data/chunk-000/file-000.parquet"); print(df)'
 -->
+
+
+<!-- データセットまーじのほうほう -->
+<!-- HF_HUB_OFFLINE=1 lerobot-edit-dataset \
+  --repo_id /userdir/dataset/merged_test \
+  --operation.type merge \
+  --operation.repo_ids "['/userdir/dataset/lerobot_bk', '/userdir/dataset/lerobot_aug0', '/userdir/dataset/lerobot_aug1', '/userdir/dataset/lerobot_aug2', '/userdir/dataset/lerobot_aug3', '/userdir/dataset/lerobot_aug4', '/userdir/dataset/lerobot_aug5', '/userdir/dataset/lerobot_aug6', '/userdir/dataset/lerobot_aug7', '/userdir/dataset/lerobot_aug8', '/userdir/dataset/lerobot_aug9', '/userdir/dataset/lerobot_aug10', '/userdir/dataset/lerobot_aug11']" \
+  --push_to_hub false -->
