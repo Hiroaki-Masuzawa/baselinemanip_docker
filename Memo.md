@@ -88,6 +88,7 @@ Pick up the purple tape and place it in the white basket.                       
 
 
 <!--
+parquetファイルの見方
 python3 -c 'import pandas as pd; df = pd.read_parquet("dataset/lerobot/meta/tasks.parquet"); print(df)'
 python3 -c 'import pandas as pd; df = pd.read_parquet("dataset/lerobot/data/chunk-000/file-000.parquet"); print(df)'
 -->
