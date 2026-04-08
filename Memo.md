@@ -6,7 +6,8 @@
 
 ## Dockerfileの変更
 - RoboManipBaselinesを本家のを利用するように変更
-- ↑に合わせてパッチは当てないように変更．（単純に対応するのがめんどくさいだけなので後で考える）
+- ~~↑に合わせてパッチは当てないように変更．（単純に対応するのがめんどくさいだけなので後で考える）~~
+    - 取り込めそうなのでそのまま取り込み
 - lerobotのインストールを実施するように変更．
 - dataset convertのスクリプト`ConvertRmbDataToLerobot.py`をpatchで修正．
     - task descriptionが正しくセットされない場合があったので対応．
