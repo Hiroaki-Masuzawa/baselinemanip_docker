@@ -172,7 +172,7 @@ diff --git a/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py b/robo_manip_b
 index 8ae04f5..f60cc0f 100644
 --- a/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
 +++ b/robo_manip_baselines/misc/ConvertRmbDataToLerobot.py
-@@ -393,18 +396,24 @@ class ConvertRmbDataToLerobot:
+@@ -393,24 +396,30 @@ class ConvertRmbDataToLerobot:
  
          data_num = len(self.dataset)
          q01, q99 = {}, {}
@@ -207,5 +207,12 @@ index 8ae04f5..f60cc0f 100644
  
          for key in stats_patterns:
              if key in self.dataset.meta.camera_keys:
+                 continue
+-            meta_stats[key]["q01"] = q01[key]
+-            meta_stats[key]["q99"] = q99[key]
++            meta_stats[key]["q01"] = np.atleast_1d(q01[key].numpy())
++            meta_stats[key]["q99"] = np.atleast_1d(q99[key].numpy())
+ 
+         serialized_stats = self.serialize_dict(meta_stats)
 PATCH
 EOF
