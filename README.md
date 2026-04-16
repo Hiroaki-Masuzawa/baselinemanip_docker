@@ -48,3 +48,18 @@ source /irsl_venv/bin/activate はせずに
 ```bash
 ./RolloutBash.sh --checkpoint <rmb file>/policy_last.ckpt 
 ```
+
+## for ROCm (AMD GPU)
+### build
+- Radeon 780M
+    ```bash
+    ./build.rocm.sh
+    ```
+- Radeon AI PRO R9700
+    ```bash
+    INDEX_URL=https://rocm.nightlies.amd.com/v2/gfx120X-all/ ./build.rocm.sh 
+    ```
+### run
+```
+./run.rocm.sh
+```

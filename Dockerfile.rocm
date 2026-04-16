@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=repo.irsl.eiiris.tut.ac.jp/irsl_system:one
+ARG BASE_IMAGE=repo.irsl.eiiris.tut.ac.jp/irsl_system:24.04_one
 FROM ${BASE_IMAGE}
 
 ###
@@ -15,6 +15,7 @@ RUN apt update -q -qq && \
 RUN python3 -m venv /irsl_venv --copies
 
 ## install pytorch
+ARG INDEX_URL=https://rocm.nightlies.amd.com/v2/gfx110X-all/
 RUN <<EOF
 if [ -e /irsl_venv/bin/activate ]; then
    source /irsl_venv/bin/activate
@@ -23,10 +24,10 @@ fi
 ## iceoryx2 -> /opt/python
 mkdir -p /opt/python
 pip install --target /opt/python iceoryx2==0.7.0
-pip install -U --index-url https://rocm.nightlies.amd.com/v2/gfx110X-all/ "rocm[libraries,devel]"
-pip install -U --index-url https://rocm.nightlies.amd.com/v2/gfx110X-all/ torch torchaudio torchvision
+pip install -U --index-url ${INDEX_URL} "rocm[libraries,devel]"
+pip install -U --index-url ${INDEX_URL} torch==2.10.0 torchaudio==2.10.0 torchvision==0.25.0
+pip install -U torchcodec==0.10.0
 EOF
-# pip install -U --index-url https://rocm.nightlies.amd.com/v2/gfx110X-all/ --pre torch torchaudio torchvision
 
 ## copy local library
 COPY irsl_manip_libs /opt/python/irsl_manip_libs
